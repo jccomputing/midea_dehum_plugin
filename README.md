@@ -5,7 +5,7 @@ A plugin for Domoticz to automate a Midea Dehumidifier
 - For now, this only works if you have an account with MSmartHome.  This could be expanded to use other methods if there is call for it.
 - There is currently no editing support.
 
-To install:
+## To install:
 
 ```
 sudo pip3 install midea-beautiful
@@ -14,7 +14,7 @@ git clone https://github.com/meaninglessvanity/midea_dehum_plugin.git
 sudo systemctl restart domoticz
 ```
 
-To use:
+## To use:
 
 Create a new Midea Dehumidifier hardware item and provide the necessary info!
 
