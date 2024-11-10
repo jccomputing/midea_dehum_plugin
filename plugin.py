@@ -182,7 +182,7 @@ class MideaPlugin:
         Domoticz.Log("onMessage called")
 
     def onCommand(self, Unit, Command, Level, Hue):
-        Domoticz.Log(
+        Domoticz.Debug(
             "onCommand called for Unit "
             + str(Unit)
             + ": Parameter '"
@@ -207,7 +207,7 @@ class MideaPlugin:
                 dehumidifier.running = Command
                 appliance.apply()
                 self.setValue(MideaPlugin.runUnit, strtobool(Command))
-                Domoticz.Log("set appliance status to {}".format(Command))
+                Domoticz.Debug("set appliance status to {}".format(Command))
             except Exception:
                 Domoticz.Error(
                     "could not set appliance status to {}".format(Command)
@@ -236,7 +236,7 @@ class MideaPlugin:
         Domoticz.Log("onDisconnect called")
 
     def onHeartbeat(self):
-        Domoticz.Log("onHeartbeat called")
+        Domoticz.Debug("onHeartbeat called")
 
         try:
             appliance = self.getDataDirect()
