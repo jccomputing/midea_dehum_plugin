@@ -88,6 +88,9 @@ class MideaPlugin:
         for key in Parameters:  # noqa: F821
             mystr = "param: " + str(key) + "->" + str(Parameters[key])  # noqa: F821
             Domoticz.Debug(mystr)
+        for key in Devices:  # noqa: F821
+            mystr = "device: " + str(key) + "->" + str(Devices[key])  # noqa: F821
+            Domoticz.Debug(mystr)
 
         self.email = Parameters["Username"]  # noqa: F821
         self.password = Parameters["Password"]  # noqa: F821
