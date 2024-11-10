@@ -39,21 +39,16 @@
 """
 
 import traceback
-import midea_beautiful
 from midea_beautiful import (
     connect_to_cloud,
     appliance_state,
-    DEFAULT_APPKEY,
-    DEFAULT_HMACKEY,
-    DEFAULT_IOTKEY,
 )
 
 with open("/var/log/domoimport.txt", "a") as f:
     f.write("starting midea plugin\n")
 try:
     import Domoticz
-    import subprocess
-except Exception as err:
+except Exception:
     tbstr = traceback.format_exc()
     with open("/var/log/domoimport.txt", "a") as f:
         f.write(tbstr)
@@ -83,13 +78,18 @@ class MideaPlugin:
         return
 
     def onStart(self):
-        if Parameters["Mode6"] in ("Debug", "File"):
+        if Parameters["Mode6"] in ("Debug", "File"):  # noqa: F821
             Domoticz.Debugging(1)
 
         Domoticz.Debug("onStart called")
-        for key in Parameters:
-            mystr = "param: " + str(key) + "->" + str(Parameters[key])
+        for key in Parameters:  # noqa: F821
+            mystr = "param: " + str(key) + "->" + str(Parameters[key])  # noqa: F821
             Domoticz.Debug(mystr)
+
+        self.email = Parameters["Mode1"]  # noqa: F821
+        self.password = Parameters["Mode2"]  # noqa: F821
+        self.address = Parameters["Mode3"]  # noqa: F821
+        self.application = Parameters["Mode4"]  # noqa: F821
 
         Domoticz.Heartbeat(10)
         Domoticz.Device(
@@ -233,16 +233,16 @@ class MideaPlugin:
                 self.setValue(MideaPlugin.ionUnit, myState.ion_mode)
                 self.setValue(MideaPlugin.sleepUnit, myState.sleep_mode)
                 self.setValue(MideaPlugin.filterUnit, myState.filter_indicator)
-        except Exception as err:
+        except Exception:
             Domoticz.Error("could not get midea data: " + traceback.format_exc())
             return
 
     def getCloud(self):
         try:
             myCloud = connect_to_cloud(
-                account=Parameters["Mode1"],
-                password=Parameters["Mode2"],
-                appname=Parameters["Mode4"],
+                account=self.email,
+                password=self.password,
+                appname=self.application,
             )
             if myCloud is None:
                 Domoticz.Error(
@@ -250,7 +250,7 @@ class MideaPlugin:
                 )
                 return None
             return myCloud
-        except Exception as err:
+        except Exception:
             Domoticz.Error("cloud connect error: " + traceback.format_exc())
             return None
 
@@ -258,8 +258,8 @@ class MideaPlugin:
         if self.cloud is None:
             self.cloud = self.getCloud()
         try:
-            myState = appliance_state(address=Parameters["Mode3"], cloud=self.cloud)
-        except Exception as err:
+            myState = appliance_state(address=self.address, cloud=self.cloud)
+        except Exception:
             Domoticz.Error("midea state error: " + traceback.format_exc())
             return None
         return myState
@@ -280,7 +280,7 @@ class MideaPlugin:
             sValue = str(round(float(Value)))
             nValue = round(float(Value))
 
-            Devices[Unit].Update(nValue=nValue, sValue=sValue)
+            Devices[Unit].Update(nValue=nValue, sValue=sValue)  # noqa: F821
 
 
 _plugin = MideaPlugin()
