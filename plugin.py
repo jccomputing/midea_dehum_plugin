@@ -12,16 +12,25 @@
            <li>Email - Your MSmartHome email</li>
            <li>Password - Your MSmartHome password</li>
            <li>Device IP - Your dehumidifier's IP Address</li>
-        </ul> 
+           <li>Application - Mobile application</li>
+        </ul>
     </description>
     <params>
-        <param field="Mode1" label="Email" required=true width="200px"/>
-        <param field="Mode2" label="Password" required=true width="150px"/>
-        <param field="Mode3" label="Device IP" required=true width="100px"/>
+        <param field="Mode1" label="Email" required="true" width="200px"/>
+        <param field="Mode2" label="Password" required="true" width="150px"/>
+        <param field="Mode3" label="Device IP" required="true" width="100px"/>
+        <param field="Mode4" label="Application" required="true" width="130px">
+            <options>
+                <option label="NetHome Plus" value="NetHome Plus" />
+                <option label="Midea Air" value="Midea Air" />
+                <option label="Ariston Clima" value="Ariston Clima" />
+                <option label="MSmartHome" value="MSmartHome" default="true" />
+            </options>
+        </param>
         <param field="Mode6" label="Debug" width="100px">
             <options>
-                <option label="True" value="Debug"/>
-                <option label="False" value="Normal"  default="true" />
+                <option label="True" value="Debug" />
+                <option label="False" value="Normal" default="true" />
                 <option label="Logging" value="File"/>
             </options>
         </param>
@@ -63,15 +72,19 @@ class MideaPlugin:
     def __init__(self):
        
         self.cloudLoads = 0;
+        self.cloud = None
         return
 
     def onStart(self):
+        if Parameters["Mode6"] in ("Debug", "File"):
+            Domoticz.Debugging(1);
+
         Domoticz.Debug("onStart called")
         for key in Parameters:
            mystr = "param: " + str(key) + '->' + str(Parameters[key])
            Domoticz.Debug(mystr)
 
-        Domoticz.Heartbeat(300);
+        Domoticz.Heartbeat(10);
 
         Domoticz.Device(Name="Relative Humidity", Unit=self.humUnit, Type=243,Subtype=6, Used=1).Create()
         Domoticz.Device(Name="Temperature", Unit=self.tempUnit, Type=80, Used=1).Create()
@@ -101,9 +114,8 @@ class MideaPlugin:
     def onMessage(self, Connection, Data):
         Domoticz.Log("onMessage called")
 
-    def onCommand(self, DeviceID, Unit, Command, Level, Color):
-        Domoticz.Log("onCommand called for Device " + str(DeviceID) + " Unit " + str(Unit) + ": Parameter '" + str(
-            Command) + "', Level: " + str(Level))
+    def onCommand(self, Unit, Command, Level, Hue):
+        Domoticz.Log("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Log("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(
@@ -115,21 +127,67 @@ class MideaPlugin:
     def onHeartbeat(self):
         Domoticz.Log("onHeartbeat called")
 
+        try:
+           appliance = self.getDataDirect()
+           myState = appliance.state
+
+           if (myState is not None and myState.current_temperature > 0):
+              self.setValue(MideaPlugin.tempUnit,myState.current_temperature)
+              self.setValue(MideaPlugin.humUnit,myState.current_humidity)
+              self.setValue(MideaPlugin.runUnit,myState.running)
+              self.setValue(MideaPlugin.fanUnit,myState.fan_speed)
+              self.setValue(MideaPlugin.pumpUnit,myState.pump)
+              self.setValue(MideaPlugin.defrostUnit,myState.defrosting)
+              self.setValue(MideaPlugin.onlineUnit,appliance.online)
+              self.setValue(MideaPlugin.targetUnit,myState.target_humidity)
+              self.setValue(MideaPlugin.tankLevelUnit,myState.tank_level)
+              self.setValue(MideaPlugin.tankUnit,myState.tank_full)
+              self.setValue(MideaPlugin.ionUnit,myState.ion_mode)
+              self.setValue(MideaPlugin.sleepUnit,myState.sleep_mode)
+              self.setValue(MideaPlugin.filterUnit,myState.filter_indicator)
+        except Exception as err:
+           Domoticz.Error("could not get midea data: "+traceback.format_exc());
+           return
+
 
     def getCloud(self):
        try:
-          myCloud = connect_to_cloud(account=Parameters["Mode1"], password=Parameters["Mode2"], appname="MSmartHome", appid=DEFAULT_APPKEY, hmackey=DEFAULT_HMACKEY, iotkey=DEFAULT_IOTKEY)
+          myCloud = connect_to_cloud(account=Parameters["Mode1"], password=Parameters["Mode2"], appname=Parameters["Mode4"])
           if (myCloud is None):
-             Domoticz.Debug("We've tried to load the cloud "+self.cloudLoads+" times.")
+             Domoticz.Error("We've tried to load the cloud "+self.cloudLoads+" times.")
              return None
           return myCloud
        except Exception as err:
-          Domoticz.Debug("cloud connect error: "+traceback.format_exc())
+          Domoticz.Error("cloud connect error: "+traceback.format_exc())
           return None
+
+    def getDataDirect(self):
+       if (self.cloud is None):
+          self.cloud = self.getCloud()
+       try:
+          myState = appliance_state(address=Parameters["Mode3"], cloud=self.cloud)
+       except Exception as err:
+          Domoticz.Error("midea state error: "+traceback.format_exc())
+          return None
+       return myState
+
+    def setValue(self, Unit, Value):
+       if Value == "True": 
+          sValue = "true"
+          nValue = 1
+       elif Value == "False":
+          sValue = "false"
+          nValue = 0
+       else :
+          Domoticz.Debug("calling setValue: {} for unit: {}".format(str(round(float(Value))), str(Unit)))
+          sValue = str(round(float(Value)))
+          nValue = round(float(Value))
+
+          Devices[Unit].Update(nValue=nValue,sValue=sValue)
 
 
 _plugin = MideaPlugin()
-_cloud = None
+_heartbeat_count = 0
  
 def onStart():
     _plugin.onStart()
@@ -148,9 +206,9 @@ def onMessage(Connection, Data):
     global _plugin
     _plugin.onMessage(Connection, Data)
 
-def onCommand(DeviceID, Unit, Command, Level, Color):
+def onCommand(Unit, Command, Level, Hue):
     global _plugin
-    _plugin.onCommand(DeviceID, Unit, Command, Level, Color)
+    _plugin.onCommand(Unit, Command, Level, Hue)
 
 
 def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
@@ -164,51 +222,11 @@ def onDisconnect(Connection):
 
 
 def onHeartbeat():
-    global _plugin,_cloud
+    global _plugin,_heartbeat_count
 
-    try: 
-       appliance = getDataDirect()
-       myState = appliance.state
-       if (myState is not None and myState.current_temperature > 0):
-          setValue(MideaPlugin.tempUnit,myState.current_temperature)
-          setValue(MideaPlugin.humUnit,myState.current_humidity)
-          setValue(MideaPlugin.runUnit,myState.running)
-          setValue(MideaPlugin.fanUnit,myState.fan_speed)
-          setValue(MideaPlugin.pumpUnit,myState.pump)
-          setValue(MideaPlugin.defrostUnit,myState.defrosting)
-          setValue(MideaPlugin.onlineUnit,appliance.online)
-          setValue(MideaPlugin.targetUnit,myState.target_humidity)
-          setValue(MideaPlugin.tankLevelUnit,myState.tank_level)
-          setValue(MideaPlugin.tankUnit,myState.tank_full)
-          setValue(MideaPlugin.ionUnit,myState.ion_mode)
-          setValue(MideaPlugin.sleepUnit,myState.sleep_mode)
-          setValue(MideaPlugin.filterUnit,myState.filter_indicator)
-    except Exception as err:
-       Domoticz.Debug("could not get midea data: "+traceback.format_exc());
-       return;
+    # process every 30 heartbeats
+    # 10s heartbeats * 30 = 300s
+    if _heartbeat_count % 30 == 0:
+        _plugin.onHeartbeat()
 
-def getDataDirect():
-    global _cloud,_plugin
-    if (_cloud is None):
-       _cloud = _plugin.getCloud()
-    try:
-       myState = appliance_state(address=Parameters["Mode3"], cloud=_cloud)
-    except Exception as err:
-       Domoticz.Debug("midea state error: "+traceback.format_exc())
-       return None
-    return myState
-
-def setValue(Unit,Value):
-   if Value == "True": 
-      sValue = "true"
-      nValue = 1
-   elif Value == "False":
-      sValue = "false"
-      nValue = 0
-   else :
-      Domoticz.Debug("calling setValue: "+str(round(float(Value))))
-      sValue = str(round(float(Value)))
-      nValue = round(float(Value))
-
-   Devices[Unit].Update(nValue=nValue,sValue=sValue)
-        
+    _heartbeat_count = _heartbeat_count + 1
