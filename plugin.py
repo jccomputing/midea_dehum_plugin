@@ -16,10 +16,10 @@
         </ul>
     </description>
     <params>
-        <param field="Mode1" label="Email" required="true" width="200px"/>
-        <param field="Mode2" label="Password" required="true" width="150px"/>
-        <param field="Mode3" label="Device IP" required="true" width="100px"/>
-        <param field="Mode4" label="Application" required="true" width="130px">
+        <param field="Username" label="Email" required="true" width="200px"/>
+        <param field="Password" label="Password" required="true" width="150px"/>
+        <param field="Address" label="Device IP" required="true" width="100px"/>
+        <param field="Mode1" label="Application" required="true" width="130px">
             <options>
                 <option label="NetHome Plus" value="NetHome Plus" />
                 <option label="Midea Air" value="Midea Air" />
@@ -86,10 +86,10 @@ class MideaPlugin:
             mystr = "param: " + str(key) + "->" + str(Parameters[key])  # noqa: F821
             Domoticz.Debug(mystr)
 
-        self.email = Parameters["Mode1"]  # noqa: F821
-        self.password = Parameters["Mode2"]  # noqa: F821
-        self.address = Parameters["Mode3"]  # noqa: F821
-        self.application = Parameters["Mode4"]  # noqa: F821
+        self.email = Parameters["Username"]  # noqa: F821
+        self.password = Parameters["Password"]  # noqa: F821
+        self.address = Parameters["Address"]  # noqa: F821
+        self.application = Parameters["Mode1"]  # noqa: F821
 
         Domoticz.Heartbeat(10)
         Domoticz.Device(
