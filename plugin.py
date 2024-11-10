@@ -98,80 +98,91 @@ class MideaPlugin:
         self.application = Parameters["Mode1"]  # noqa: F821
 
         Domoticz.Heartbeat(10)
-        Domoticz.Device(
-            Name="Relative Humidity", Unit=self.humUnit, Type=243, Subtype=6, Used=1
-        ).Create()
-        Domoticz.Device(
-            Name="Temperature", Unit=self.tempUnit, Type=80, Used=1
-        ).Create()
-        Domoticz.Device(
-            Name="Running",
-            Unit=self.runUnit,
-            Type=244,
-            Subtype=73,
-            Switchtype=0,
-            Used=1,
-        ).Create()
-        Domoticz.Device(
-            Name="Fan", Unit=self.fanUnit, Type=243, Subtype=6, Used=1
-        ).Create()
-        Domoticz.Device(
-            Name="Pump", Unit=self.pumpUnit, Type=244, Subtype=73, Switchtype=0, Used=1
-        ).Create()
-        Domoticz.Device(
-            Name="Defrost",
-            Unit=self.defrostUnit,
-            Type=244,
-            Subtype=73,
-            Switchtype=0,
-            Used=1,
-        ).Create()
-        Domoticz.Device(
-            Name="Online",
-            Unit=self.onlineUnit,
-            Type=244,
-            Subtype=73,
-            Switchtype=0,
-            Used=1,
-        ).Create()
-        Domoticz.Device(
-            Name="Humidity Target", Unit=self.targetUnit, Type=243, Subtype=6, Used=1
-        ).Create()
-        Domoticz.Device(
-            Name="Tank Level", Unit=self.tankLevelUnit, Type=243, Subtype=6, Used=1
-        ).Create()
-        Domoticz.Device(
-            Name="Tank Full",
-            Unit=self.tankUnit,
-            Type=244,
-            Subtype=73,
-            Switchtype=0,
-            Used=1,
-        ).Create()
-        Domoticz.Device(
-            Name="Ion Mode",
-            Unit=self.ionUnit,
-            Type=244,
-            Subtype=73,
-            Switchtype=0,
-            Used=1,
-        ).Create()
-        Domoticz.Device(
-            Name="Sleep Mode",
-            Unit=self.sleepUnit,
-            Type=244,
-            Subtype=73,
-            Switchtype=0,
-            Used=1,
-        ).Create()
-        Domoticz.Device(
-            Name="Filter Indicator",
-            Unit=self.filterUnit,
-            Type=244,
-            Subtype=73,
-            Switchtype=0,
-            Used=1,
-        ).Create()
+
+        if len(Devices) == 0:  # noqa: F821
+            Domoticz.Device(
+                Name="Relative Humidity", Unit=self.humUnit, Type=243, Subtype=6, Used=1
+            ).Create()
+            Domoticz.Device(
+                Name="Temperature", Unit=self.tempUnit, Type=80, Used=1
+            ).Create()
+            Domoticz.Device(
+                Name="Running",
+                Unit=self.runUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Fan", Unit=self.fanUnit, Type=243, Subtype=6, Used=1
+            ).Create()
+            Domoticz.Device(
+                Name="Pump",
+                Unit=self.pumpUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Defrost",
+                Unit=self.defrostUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Online",
+                Unit=self.onlineUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Humidity Target",
+                Unit=self.targetUnit,
+                Type=243,
+                Subtype=6,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Tank Level", Unit=self.tankLevelUnit, Type=243, Subtype=6, Used=1
+            ).Create()
+            Domoticz.Device(
+                Name="Tank Full",
+                Unit=self.tankUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Ion Mode",
+                Unit=self.ionUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Sleep Mode",
+                Unit=self.sleepUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
+            Domoticz.Device(
+                Name="Filter Indicator",
+                Unit=self.filterUnit,
+                Type=244,
+                Subtype=73,
+                Switchtype=0,
+                Used=1,
+            ).Create()
 
     def onStop(self):
         Domoticz.Log("onStop called")
