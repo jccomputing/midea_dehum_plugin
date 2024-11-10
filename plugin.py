@@ -170,9 +170,6 @@ class MideaPlugin:
             Used=1,
         ).Create()
 
-        # if (not "Dimmer" in Devices):
-        #    Domoticz.Unit(Name="Dimmer", Unit=2, TypeName="Dimmer", DeviceID="Dimmer").Create()
-
     def onStop(self):
         Domoticz.Log("onStop called")
         Domoticz.Debugging(0)
