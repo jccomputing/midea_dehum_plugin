@@ -3,7 +3,7 @@ A plugin for Domoticz to automate a Midea Dehumidifier
 
 ## Limitations
 - For now, this only works if you have an account with MSmartHome.  This could be expanded to use other methods if there is call for it.
-- There is currently no editing support.
+- Currently only start / stop is supported.
 
 ## To install:
 

@@ -43,6 +43,9 @@ from midea_beautiful import (
     connect_to_cloud,
     appliance_state,
 )
+from midea_beautiful.appliance import DehumidifierAppliance
+from midea_beautiful.util import strtobool
+from typing import cast
 
 with open("/var/log/domoimport.txt", "a") as f:
     f.write("starting midea plugin\n")
@@ -190,6 +193,29 @@ class MideaPlugin:
             + "', Level: "
             + str(Level)
         )
+
+        try:
+            appliance = self.getDataDirect()
+        except Exception:
+            Domoticz.Error("could not get midea data: " + traceback.format_exc())
+            return
+
+        # Start / stop
+        if Unit == self.runUnit:
+            # Running property is not available on LanDevice, must cast to
+            # proper type
+            if DehumidifierAppliance.supported(appliance.type):
+                dehumidifier = cast(DehumidifierAppliance, appliance.state)
+            try:
+                dehumidifier.running = Command
+                appliance.apply()
+                self.setValue(MideaPlugin.runUnit, strtobool(Command))
+                Domoticz.Log("set appliance status to {}".format(Command))
+            except Exception:
+                Domoticz.Error(
+                    "could not set appliance status to {}".format(Command)
+                    + traceback.format_exc()
+                )
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Log(
