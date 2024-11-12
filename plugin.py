@@ -104,7 +104,7 @@ class MideaPlugin:
                 Name="Relative Humidity", Unit=self.humUnit, Type=243, Subtype=6, Used=1
             ).Create()
             Domoticz.Device(
-                Name="Temperature", Unit=self.tempUnit, Type=80, Used=1
+                Name="Temperature", Unit=self.tempUnit, Type=80, Subtype=5, Used=1
             ).Create()
             Domoticz.Device(
                 Name="Running",
